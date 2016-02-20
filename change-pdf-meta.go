@@ -1,8 +1,3 @@
-// changePDFmeta changes the META field from PDF file to new field.
-// This tool use pdftk (pdftk must be installed in you system).
-// The pdf file names and new fields are being taken from the csv-file (filename;new title)
-// The csv file and field name to change are taken from args.
-
 package main
 
 import (
@@ -12,24 +7,34 @@ import (
 	"math/rand"
 	"os"
 	"os/exec"
+	"path"
 	"strconv"
 	"time"
 )
 
 func main() {
 
-	newPdfDirName := "newpdf"
+	newPdfDirName := "new-pdf"
 
-	if len(os.Args) < 3 {
-		fmt.Println(os.Args[0] + " — change the PDF meta field on the files from a csv-list.")
+	if len(os.Args) < 4 {
+		execname := path.Base(os.Args[0])
+		fmt.Println(execname + " — change the PDF meta field on the files from a csv-list.")
 		fmt.Println("CSV-file format: (filename;new title)")
-		fmt.Println("\nSelect the csv file name and the meta-field name.")
-		fmt.Println(os.Args[0] + " filename.csv" + " metaname")
-		os.Exit(-1)
+		fmt.Println("\nUsage:")
+		fmt.Println("Select the csv file name and the meta-field name.")
+		fmt.Println("./" + execname + " filename.csv" + " metaname" + " pdfdir")
+		os.Exit(0)
 	}
 
 	filename := os.Args[1]
 	metaname := os.Args[2]
+	pdfdir := os.Args[3]
+
+	newPdfDirName = pdfdir + "/" + newPdfDirName
+
+	if wd, err := os.Getwd(); err == nil {
+		fmt.Println("Work dir: " + wd)
+	}
 
 	f, err := os.Open(filename)
 	if err != nil {
@@ -60,7 +65,7 @@ func main() {
 
 	for _, line := range s {
 		if len(line) >= 2 {
-			changePDFmeta(line[0], line[1], metaname, newPdfDirName)
+			changePDFmeta(line[0], line[1], metaname, newPdfDirName, pdfdir)
 		} else {
 			fmt.Fprintln(os.Stderr, "Format of the csv-file line is not correct:")
 			fmt.Fprintln(os.Stderr, line)
@@ -69,12 +74,12 @@ func main() {
 }
 
 // changePDFmeta sets the META metaname properties to str in the pdffilename
-func changePDFmeta(pdfFilename string, str string, metaname string, newPdfDir string) {
+func changePDFmeta(pdfFilename, str, metaname, newPdfDir, pdfdir string) {
 
 	rand.Seed(time.Now().UTC().UnixNano())
 
-	tempDir := os.TempDir() + "/" + "changePDFmeta"
-	tempFilename := tempDir + "/" + metaname + strconv.Itoa(rand.Int())
+	tempDir := os.TempDir() + "/" + "change-pdf-meta"
+	tempFilename := tempDir + "/" + strconv.Itoa(rand.Int())
 
 	var fileContent []byte
 
@@ -88,21 +93,27 @@ func changePDFmeta(pdfFilename string, str string, metaname string, newPdfDir st
 		}
 	}
 
-	// Make tempFile to pdftk
+	// Make tempFile for pdftk
 	if err := ioutil.WriteFile(tempFilename, fileContent, os.ModePerm); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		fmt.Fprintln(os.Stderr, "Can't write to the file: "+tempFilename)
 		os.Exit(4)
 	}
 
-	c := exec.Command("pdftk", pdfFilename, "update_info_utf8", tempFilename, "output", newPdfDir+"/"+pdfFilename)
+	//args := []string{"'" + pdfdir + "/" + pdfFilename + "'", "update_info_utf8", tempFilename, "output", "'" + newPdfDir + "/" + pdfFilename + "'"}
+
+	args := []string{pdfdir + "/" + pdfFilename, "update_info_utf8",
+		tempFilename, "output", newPdfDir + "/" + pdfFilename}
+
+	c := exec.Command("pdftk", args...)
+
 	fmt.Printf("Run: %s — ", c.Args)
+
 	err := c.Run()
 
 	if err != nil {
-		fmt.Println("Error")
+		fmt.Println("Error:", err)
 	} else {
 		fmt.Println("Success")
 	}
-
 }
