@@ -21,4 +21,3 @@ table.csv
 ---------
 file1.pdf;New title for file1   
 file2.pdf;New title for file2
-...
