@@ -1,4 +1,4 @@
-# changePDFmeta changes the META field from PDF file to new field.
+# ChangePDFmeta changes the META field from PDF file to new field.
 
 This tool use pdftk (pdftk must be installed in you system).
 
@@ -13,10 +13,12 @@ go build changePDFmeta.go
 
 
 ##USAGE: 
+```
 changePDFmeta table.csv Title
+```
 
 table.csv
 ---------
-file1.pdf;New title for file1
+file1.pdf;New title for file1   
 file2.pdf;New title for file2
 ...
