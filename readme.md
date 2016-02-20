@@ -14,7 +14,7 @@ go build change-pdf-meta.go
 
 ##USAGE: 
 ```
-./change-pdf-meta table.csv Title
+./change-pdf-meta table.csv Title pdfdir
 ```
 
 table.csv
