@@ -7,7 +7,9 @@ The csv file and field name to change are taken from args.
 
 ## Compile
 You must compile this tool from the sourse by running:
-	go build changePDFmeta.go
+```
+go build changePDFmeta.go
+```
 
 
 ##USAGE: 
